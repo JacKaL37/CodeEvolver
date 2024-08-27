@@ -90,16 +90,13 @@
       <option value="claude-3-opus-20240229">Claude 3 Opus</option>
       <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
     </select>
-    <div class="api-key-group">
-      <h4>API Key</h4>
-      <input type="password" id="apiKey" placeholder="(will not be saved)" required>
-    </div>
+
     <p id="claude-warning">Warning: You must disable CORS to use Claude 
       <a href="https://medium.com/@beligh.hamdi/run-chrome-browser-without-cors-872747142c61" target="_blank"><i class="fa fa-question-circle"></i></a>
     </p>
     <div id="settings-icons">
       <i class="fa fa-cog"></i>
-      <i class="fa fa-caret-up" id="settingsCarrot"></i>
+      <i class="fa fa-caret-down" id="settingsCarrot"></i>
     </div>
     <div class="settings" id="settings" style="display: none;">
       <div class="checkbox-container">
@@ -150,6 +147,7 @@
 
   <script src="splice.js"></script>
   <script src="defaults.js"></script>
+  <script src="keys.js"></script>
   <!-- empty_page, generating_page, systemPrompt, startPrompt, variationPrompt, fullCodingPrompt, splicePrompt all defined in defaults.js -->
   <script>
     let currentSelection = -1;
@@ -475,8 +473,8 @@
 
 
     let currentModel = document.getElementById('model').value;
-    let gptAPIKey = '';
-    let claudeAPIKey = '';
+    let gptAPIKey = OPENAI_API_KEY;
+    let claudeAPIKey = ANTHROPIC_API_KEY;
     let geminiAPIKey = '';
 
     const MAX_CALLS = 5;
@@ -494,6 +492,7 @@
         // console.log(`"${full_output}"`);
         messages.push({"role": "assistant", "content": full_output});
       }
+      console.log(messages)
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -504,7 +503,6 @@
         model: currentModel,
         messages,
         temperature: parseFloat(document.getElementById('temperature').value),
-        max_tokens: 4096,
         })
       });
       if (!response.ok) {
@@ -706,17 +704,13 @@
       settings.style.display = display;
       // replace caret with up or down
       const settingsCarrot = document.getElementById('settingsCarrot');
-      settingsCarrot.classList.toggle('fa-caret-down');
       settingsCarrot.classList.toggle('fa-caret-up');
+      settingsCarrot.classList.toggle('fa-caret-down');
     });
 
     const generateButton = document.getElementById('generateButton');
     generateButton.addEventListener('click', () => {
-      const apiKeySet = !!document.getElementById('apiKey').value;
-      if (!apiKeySet) {
-        document.getElementById('apiKey').focus();
-        return;
-      }
+
       clearLikes();
       const startWindow = document.getElementById('start-window');
       startWindow.style.display = 'none';
@@ -797,10 +791,6 @@
       if (code === empty_page || code === generating_page) {
         return;
       }
-      if (!document.getElementById('apiKey').value) {
-        document.getElementById('apiKey').focus();
-        return;
-      }
       generateVariations(code);
       clearLikes();
     }
@@ -833,19 +823,8 @@
         apiKey = gptAPIKey;
         promptModel = promptGPT;
       }
-      document.getElementById('apiKey').value = apiKey;
     });
 
-    const apiKeyInput = document.getElementById('apiKey');
-    apiKeyInput.addEventListener('input', () => {
-      if (currentModel.includes('claude')) {
-        claudeAPIKey = apiKeyInput.value;
-      } else if (currentModel.includes('gemini')) {
-        geminiAPIKey = apiKeyInput.value;
-      } else {
-        gptAPIKey = apiKeyInput.value;
-      }
-    });
 
     const zoomInput = document.getElementById('zoom');
     function setZoom () {
