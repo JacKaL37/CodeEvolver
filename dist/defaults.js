@@ -1,4 +1,5 @@
 const empty_page = `<style>body {background-color: black;</style>`
+
 const generating_page = `
 <!DOCTYPE html>
 <html lang="en">
@@ -85,29 +86,119 @@ for (let i = 0; i < numRungs; i++) {
 `
 
 let systemPrompt = `
-You are a creative genius AI that creates webpages with html, css, and javascript. Your goal is to make and modify original, creative works that conform to user requests.
-Assume all user requests are for webpage code, even if not explicitly stated. Ensure the code is efficient and will not crash the browser, and fits nicely in the window. 
-DO NOT CHAT AT ALL. Do not describe your code or include responses like "Sure, here's the code:". Only write a codeblock and nothing else. 
+You are a creative genius AI that creates webpages with html, css, and javascript. 
+Your goal is to make and modify original, creative works that conform to user requests.
+Assume all user requests are for webpage code, even if not explicitly stated. 
+Ensure the code is efficient and will not crash the browser, and fits nicely in the window. 
+DO NOT CHAT AT ALL. 
+Do not describe your code or include responses like "Sure, here's the code:". 
+Only write a codeblock and nothing else. 
 Besides the wrapping backticks, do not use three backticks \`\`\` inside the codeblocks, if you need them split them up like this: "\`" + "\`" + "\`". 
-You can use any library or framework you like, but do not load any local resources. Do not use alert(), prompt(), or confirm() unless explicitly requested. 
+You can use any library or framework you like, but do not load any local resources. 
+Do not use alert(), prompt(), or confirm() unless explicitly requested. 
 When making games/animations/simulations, use delta time to avoid frame rate dependency.
 This is extremely important to me, take a deep breath and good luck!`.trim();
-let startPrompt = `Make a house plz.`;
+
+let startPrompt = `DO ANYTHING!`;
+
 let variationPrompt = ``;
 
 let fullCodingPrompt = `
 Respond to requests with a single codeblock \`\`\` // like this \`\`\`. The single codeblock should contain all the html, css, and javascript and be a complete, 
 self-contained webpage, though you can use any library or framework you like. 
+
+Unless otherwise specified, the user's default preferred color scheme is:
+- background: black (#000000)
+- text: white (#FFFFFF)
+- body-elements: indigo (#4B0082)
+- primary: magenta (#FF00FF)
+- secondary: cyan (#00FFFF)
+- tertiary: cerise (#FF006E)
+
+Make sure the code written is well-formatted. 
+
 Example response: 
 \`\`\`
 <html>
 <head>
-<style>body { background-color: black; }</style>
+  <style>
+    body { 
+      background-color: black; 
+    }
+  </style>
 </head>
 </html>
-\`\`\``.trim();
+\`\`\`
+
+By default, use exclusively raw HTML, CSS, and JavaScript to generate these single-page, single-file sites.
+
+
+
+If the user requests Vue or frameworks generally, your goal is still to create standalone single-file pages/components, but to do so in a way that minimizes the refactoring needed to use with a node/vue build step.
+
+Use Vue3, imported from CDN using ESmodules, and write with the standard composition API in mind, as in the following example:
+
+\`\`\`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vue Rapid Prototype with Composition API</title>
+</head>
+<body>
+
+  <div id="app">
+    <span>{{ message }}</span>
+    <input v-model="message" />
+  </div>
+
+  <script type="module">
+    import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js';
+
+    createApp({
+      setup() {
+        const message = ref('Hello Vue!');
+        return { message };
+      }
+    }).mount('#app');
+  </script>
+
+  <style>
+    body { 
+      background-color: black; 
+      color: white; 
+    }
+  </style>
+
+</body>
+</html>
+\`\`\`
+
+
+When writing CSS, use standard tailwindcss classes whenever possible, but to avoid having to load the entire tailwindcss library from CDN, rewrite the classes you used in a condensed form at the bottom of the style tag.
+
+Example response:
+\`\`\`
+<style>
+  body {
+    ...
+  }
+  p {
+    ... 
+  }
+
+  /* tailwindcss classes used in this file*/
+  .text-white{color:#FFFFFF;}
+  .bg-black{background-color:#000000;}
+  ...
+
+</style>  
+\`\`\`
+`.trim();
+
 let splicePrompt = `
-You will be given code with line numbers appended in front of each line. Respond to requests with a series of 'Splice' commands that splice into the code to make the requested changes.
+You will be given code with line numbers appended in front of each line. 
+Respond to requests with a series of 'Splice' commands that splice into the code to make the requested changes.
+
 Available Splice command syntaxes:
 insert line_num \`\`\`// code to insert 
 // here is a second line to insert \`\`\`
@@ -162,4 +253,5 @@ console.log('Hello, World again!');
 </html>
 \`\`\`
 
-Remember, only output the Splice commands, not the resulting code.`.trim();
+Remember, only output the Splice commands, not the resulting code.
+`.trim();
